@@ -1,0 +1,16 @@
+#comment lines start with '#' symbol
+#first non-comment line contains two integers. The first is number of nodes
+# and the second is number of edges
+10 9
+#All following non-comment lines contain two integers as well, enumerating
+#the connections in the graph. Make sure all nodes in the graph are connected,
+# or the code may infinite loop
+0 1
+1 2
+2 3
+3 4
+4 5
+5 6
+6 7
+7 8
+8 9

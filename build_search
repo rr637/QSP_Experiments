@@ -1,0 +1,1 @@
+g++ cpp/search_main.cpp cpp/search.cpp cpp/vqc.cpp cpp/simulator.cpp -std=c++11 -O3 -o search_cpp

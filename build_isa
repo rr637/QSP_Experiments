@@ -1,0 +1,1 @@
+g++ cpp/greedy.cpp cpp/greedy3.cpp cpp/isa_main.cpp cpp/pattern.cpp cpp/simulator.cpp cpp/sp3.cpp cpp/state_tracker.cpp -std=c++11 -o isa_cpp -O3

@@ -1,0 +1,1 @@
+g++ cpp/*.cpp -std=c++11 -o isa_cpp -O3
