@@ -14,8 +14,8 @@ while fidelity < 0.95:
     if "vqc_cpp" not in os.listdir():
         os.system("./build_vqc")
 
-    n = 5
-    state_file = "state.txt"
+    n = 10
+    state_file = "States/state0.txt"
     #Same command as running the ISA executable. To change the number of VQC layers,
     # go into cpp/vqc_main.cpp and modify the variable "num_layers" under main()
     os.system(f"./vqc_cpp output4.txt {state_file} {n} 0.95 {num_layers}")
