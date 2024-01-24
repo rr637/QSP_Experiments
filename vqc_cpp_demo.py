@@ -5,7 +5,7 @@ from parser import extract_state_from_file
 #Compile cpp code to executable, if it hasn't been compiled already.
 # Or, if there's an issue with running the executable, try removing it and
 # recompiling
-num_layers = 1
+num_layers = 6
 fidelity = 0
 while fidelity < 0.95: 
     if "vqc_cpp" in os.listdir():
@@ -58,8 +58,6 @@ while fidelity < 0.95:
     #To get the gate sequence for preparing [state] starting from |0>,
     # reverse and invert all the gates
 
-    import numpy as np
-
     start = [0 for _ in range(2**n)]
     start[0] += 1
     for gate in gate_sequence:
@@ -68,5 +66,5 @@ while fidelity < 0.95:
     start = np.array(start)
     print(abs(np.vdot(state, start)) ** 2) #Should be greater than 0.95
 
-    num_layers += 1
+    num_layers += 2
 
