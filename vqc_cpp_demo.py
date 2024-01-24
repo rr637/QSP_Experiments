@@ -1,7 +1,7 @@
 import os
 import qc
 from parser import extract_state_from_file
-
+import numpy as np
 #Compile cpp code to executable, if it hasn't been compiled already.
 # Or, if there's an issue with running the executable, try removing it and
 # recompiling
