@@ -29,7 +29,7 @@ for i in range(params['num_protein']):
         os.system("./build_search")
 
     state_file = f"./States/state{i}.txt"
-    output_file = f"Results/ISA_Exp:_{name_exp}/Outputs_search/gates{i}.txt"
+    output_file = f"Results/SEARCH_Exp:_{name_exp}/Outputs_search/gates{i}.txt"
     start_time = time.time()
 
     os.system(f"./search_cpp {output_file} {state_file} {n} 0.95")

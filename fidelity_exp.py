@@ -157,6 +157,137 @@ def run_exp():
   return (target_fids,noisy_fids, noisy_vs_target)
 
 
+from qiskit import QuantumCircuit
+from qiskit_aer import AerSimulator
+from qiskit.providers.fake_provider import FakeMelbourneV2
+from qiskit.quantum_info import state_fidelity
+from qiskit.test.mock import FakeMelbourneV2
+
+import numpy as np
+import os
+import qc
+from parser import extract_state_from_file
+import matplotlib.pyplot as plt
+from datetime import datetime
+import cmath
+
+
+backend = AerSimulator.from_backend(FakeMelbourneV2())
+
+# Retrieve the coupling map from the backend
+print("Coupling Map:")
+print(backend.configuration().coupling_map)
+aer_sim = AerSimulator()
+melbourne = FakeMelbourneV2()
+n=5
+state_file = 'state.txt'
+
+state = extract_state_from_file(state_file, n)
+
+print(state)
+amplitudes_ideal = [abs(c) for c in state]
+
+if "isa_cpp" not in os.listdir():
+      os.system("./build_isa")
+output_file  = "fidelity_gate_outputs/output.txt"
+os.system(f"./isa_cpp {output_file} {state_file} {n} 0.80")
+
+gate_sequence = []
+with open(output_file) as f:
+    while True:
+        line = f.readline()
+        if len(line) == 0: break
+        if len(line) < 3: continue
+        [gate_type, a1, a2] = line.split()
+        if gate_type == "rx": 
+            target = a1
+            angle = a2
+            gate = qc.Gate.RX(int(a1), float(angle), n)
+            gate_sequence.append(gate.inverse())
+        elif gate_type == "ry":
+            target = a1
+            angle = a2
+            gate = qc.Gate.RY(int(a1), float(angle), n)                    
+            gate_sequence.append(gate.inverse())
+        elif gate_type == "rz":
+            target = a1
+            angle = a2
+            gate = qc.Gate.RZ(int(a1), float(angle), n)
+            gate_sequence.append(gate.inverse())
+        elif gate_type == "cx" or gate_type == "xc":
+            gate_sequence.append(qc.Gate.CX(int(a1), int(a2),n))
+
+gate_sequence.reverse()
+
+CX_count = 0
+for gate in gate_sequence:
+    # print(gate.to_string())
+    if gate.gate_type == "cx" or gate.gate_type == "xc":
+        CX_count += 1
+print(f"Number of Gates: {len(gate_sequence)}")
+print(f"CX Count: {CX_count}")
+
+
+
+state_c = state
+for gate in reversed(gate_sequence):
+    state_c = qc.apply_gate(gate.inverse(), state_c)
+ideal_fid1 = abs(state_c[0]) ** 2
+print(f"Verify fid greater than 0.95: {ideal_fid1}") 
+
+#To get the gate sequence for preparing [state] starting from |0>,
+# reverse and invert all the gates
+
+import numpy as np
+
+start = [0 for _ in range(32)]
+start[0] += 1
+for gate in gate_sequence:
+    start = qc.apply_gate(gate, start)
+
+start = np.array(start)
+ideal_fid2 = abs(np.vdot(state, start)) ** 2
+print(f"Verify fid greater than 0.95: {ideal_fid2}")
+
+circ  = QuantumCircuit(n)
+for gate in gate_sequence:
+    if gate.gate_type == "rx": 
+        target = gate.target
+        angle = gate.angle
+        circ.rx(angle,target)
+    elif gate.gate_type == "ry":
+        target = gate.target
+        angle = gate.angle
+        circ.ry(angle,target)
+    elif gate.gate_type == "rz":
+        target = gate.target
+        angle = gate.angle
+        circ.rz(angle,target)
+
+    elif gate.gate_type == "cx":
+        control = gate.target
+        target = control + 1
+        circ.cx(control,target)
+
+    elif gate.gate_type == "xc":
+        target = gate.target
+        control = target + 1
+        circ.cx(control,target)
+circ.save_density_matrix()
+state = np.array(state).reshape(-1, 1)
+p_ideal = np.outer(state,state.conj())
+p_noisy = melbourne.run(circ).result().data()['density_matrix']
+noisy_fidelity = state_fidelity(p_ideal,p_noisy)
+print(f"Noisy fid : {noisy_fidelity}")
+print(p_noisy)
+probabilities = np.diag(p_noisy)
+print(sum(probabilities))
+
+# Calculate the square root to obtain the complex amplitudes
+noisy_amplitudes = np.sqrt(probabilities)
+
+
+
 
 
 
@@ -165,46 +296,50 @@ def run_exp():
 # Assuming target_fids, noisy_fids, and noisy_vs_target are dictionaries
 target_fids, noisy_fids, noisy_vs_target = run_exp()
 
-# Create subplots with one row and three columns
-fig, axs = plt.subplots(1, 3, figsize=(18, 6))
+# Assuming you have already defined target_fids, noisy_fids, and noisy_vs_target
 
-# Plot for noisy_fids as a line graph
+# Create a 2x2 grid
+fig, axs = plt.subplots(2, 2, figsize=(12, 10))
+
+# Plot for noisy_fids as a bar graph in the first subplot (top-left)
 x_values_noisy = [float(key) for key in noisy_fids.keys()]
 y_values_noisy = list(noisy_fids.values())
-print(y_values_noisy)
-axs[0].bar(x_values_noisy, y_values_noisy, color='orange')  # Adjust color as needed
-axs[0].set_title('Noisy Fidelity')
-axs[0].set_xlabel('CX Count')
-axs[0].set_ylabel('Noisy Fidelity')
-print("Noisy Fidelity Data:")
-for x, y in zip(x_values_noisy, y_values_noisy):
-    print(f"X: {x}, Y: {y}")
-# Plot for target_fids as a line graph
+axs[0, 0].bar(x_values_noisy, y_values_noisy, color='orange')
+axs[0, 0].set_title('a) Noisy Fidelity')
+axs[0, 0].set_xlabel('CX Count')
+axs[0, 0].set_ylabel('Noisy Fidelity')
+
+# Plot for target_fids as a bar graph in the second subplot (top-right)
 x_values_target = [float(key) for key in target_fids.keys()]
 y_values_target = list(target_fids.values())
+axs[0, 1].bar(x_values_target, y_values_target, color='blue')
+axs[0, 1].set_title('b) Ideal Fidelity')
+axs[0, 1].set_xlabel('CX Count')
+axs[0, 1].set_ylabel('Ideal Fidelity')
 
-axs[1].bar(x_values_target, y_values_target, color='blue')  # Adjust color as needed
-axs[1].set_title('Target Fidelity')
-axs[1].set_xlabel('CX Count')
-axs[1].set_ylabel('Target Fidelity')
-
-# Plot for noisy_vs_target as a line graph
+# Plot for noisy_vs_target as a line graph in the third subplot (bottom-left)
 x_values_nvt = [float(key) for key in noisy_vs_target.keys()]
 y_values_nvt = list(noisy_vs_target.values())
-print("\nTarget Fidelity Data:")
-for x, y in zip(x_values_target, y_values_target):
-    print(f"X: {x}, Y: {y}")
-axs[2].plot(x_values_nvt, y_values_nvt, color='green', marker='o')  # Adjust marker and line style as needed
-axs[2].set_title('Noisy vs Target Fidelity')
-axs[2].set_xlabel('Target Fidelity')
-axs[2].set_ylabel('Noisy Fidelity')
+axs[1, 0].plot(x_values_nvt, y_values_nvt, color='green', marker='o')
+axs[1, 0].set_title('c) Noisy vs Ideal Fidelity')
+axs[1, 0].set_xlabel('Ideal Fidelity')
+axs[1, 0].set_ylabel('Noisy Fidelity')
+
+# Assuming you have defined amplitudes_ideal and noisy_amplitudes for the bottom-right subplot
+# Plot for amplitudes comparison in the fourth subplot (bottom-right)
+axs[1, 1].plot(amplitudes_ideal, label='Ideal', linestyle='-')
+axs[1, 1].plot(noisy_amplitudes, label='Noisy', linestyle='-')
+axs[1, 1].set_title('d) Amplitudes Comparison (Ideal vs Noisy)')
+axs[1, 1].set_xlabel('Basis')
+axs[1, 1].set_ylabel('Amplitude')
+axs[1, 1].legend()
 
 # Adjust layout for better appearance
 plt.tight_layout()
-current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
 
 # Save the figure
-plt.savefig(f'Plots/subplots_bar_{current_time}.png')
+current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+plt.savefig(f'Plots/2x2_subplot_grid_{current_time}.png')
 
 # Show the plot
 plt.show()

@@ -31,7 +31,7 @@ amplitudes_ideal = [abs(c) for c in state]
 if "isa_cpp" not in os.listdir():
       os.system("./build_isa")
 output_file  = "fidelity_gate_outputs/output.txt"
-os.system(f"./isa_cpp {output_file} {state_file} {n} 0.95")
+os.system(f"./isa_cpp {output_file} {state_file} {n} 0.80")
 
 gate_sequence = []
 with open(output_file) as f:
@@ -137,6 +137,6 @@ plt.title('Amplitudes Comparison (Ideal vs Noisy)')
 plt.xlabel('Basis')
 plt.ylabel('Amplitude')
 plt.legend()
-plt.savefig(f'Plots/5_qubit_amplitudes.png')
+plt.savefig(f'Plots/5_qubit_amplitudes_0.8.png')
 plt.show()
 
