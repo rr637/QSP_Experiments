@@ -156,22 +156,6 @@ def run_exp():
   print(noisy_fids)
   return (target_fids,noisy_fids, noisy_vs_target)
 
-
-from qiskit import QuantumCircuit
-from qiskit_aer import AerSimulator
-from qiskit.providers.fake_provider import FakeMelbourneV2
-from qiskit.quantum_info import state_fidelity
-from qiskit.test.mock import FakeMelbourneV2
-
-import numpy as np
-import os
-import qc
-from parser import extract_state_from_file
-import matplotlib.pyplot as plt
-from datetime import datetime
-import cmath
-
-
 backend = AerSimulator.from_backend(FakeMelbourneV2())
 
 # Retrieve the coupling map from the backend
