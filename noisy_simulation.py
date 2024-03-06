@@ -302,12 +302,24 @@ axs[0, 1].set_xlabel('CX Count')
 axs[0, 1].set_ylabel('Ideal Fidelity')
 
 # Plot for noisy_vs_target as a line graph in the third subplot (bottom-left)
-x_values_nvt = [float(key) for key in noisy_vs_target.keys()]
-y_values_nvt = list(noisy_vs_target.values())
+x_values_nvt = np.array([float(key) for key in noisy_vs_target.keys()])
+y_values_nvt = np.array(list(noisy_vs_target.values()))
 axs[1, 0].plot(x_values_nvt, y_values_nvt, color='green', marker='o')
 axs[1, 0].set_title('c) Noisy vs Ideal Fidelity')
 axs[1, 0].set_xlabel('Ideal Fidelity')
 axs[1, 0].set_ylabel('Noisy Fidelity')
+
+# Perform quadratic regression
+# coefficients = np.polyfit(x_values_nvt, y_values_nvt, 2)
+# quadratic_fit = np.poly1d(coefficients)
+
+# # Generate x values for the regression line
+# x_fit = np.linspace(min(x_values_nvt), max(x_values_nvt), 100)
+
+# Plot the quadratic regression line
+# axs[1, 0].plot(x_fit, quadratic_fit(x_fit), color='red', linestyle='dashed', label='Quadratic Regression')
+# axs[1, 0].legend()
+
 
 # Assuming you have defined amplitudes_ideal and noisy_amplitudes for the bottom-right subplot
 # Plot for amplitudes comparison in the fourth subplot (bottom-right)
@@ -318,6 +330,8 @@ axs[1, 1].set_xlabel('Basis')
 axs[1, 1].set_ylabel('Amplitude')
 axs[1, 1].legend()
 
+axs[1, 1].set_xticks([])
+axs[1, 1].set_yticks([])
 # Adjust layout for better appearance
 plt.tight_layout()
 
@@ -327,3 +341,6 @@ plt.savefig(f'Plots/2x2_subplot_grid_{current_time}.png')
 
 # Show the plot
 plt.show()
+
+#{'4': 0.4156102611680524, '10': 0.5617238763523772, '14': 0.5741604922403004, '19': 0.5638220750729754, '24': 0.5218784637169586, '30': 0.4934750850822063}
+#{'4': 0.4156102611680524, '10': 0.5617238763523772, '14': 0.5741604922403004, '19': 0.5638220750729754, '24': 0.5218784637169586, '30': 0.4934750850822063}
