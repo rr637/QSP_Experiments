@@ -92,7 +92,44 @@ with open(csv_file_path, 'w', newline='') as csvfile:
     writer.writerow(['Fidelities'] + Fidelities)
     writer.writerow(['Avg_Fidelities', avg_fidelities])
 
+import os
+import qc
 
+#Compile cpp code to executable, if it hasn't been compiled already
+if "isa_cpp" not in os.listdir():
+    os.system("./build_isa")
+
+#In the below command,
+#  [output.txt] is the output file (can be named anything)
+#  [state.txt] is the input file
+#  [5] is the number of qubits
+#  [0.95] is the target fidelity. The target fidelity is an optional argument
+#    with 0.95 as default value
+os.system("./isa_cpp output.txt state.txt 5 0.95")
+
+#Now read the gates from the output file
+gate_sequence = []
+with open("output.txt") as f:
+    while True:
+        line = f.readline()
+        if len(line) == 0: break
+        if len(line) < 3: continue
+        [gate_type, a1, a2] = line.split()
+        if gate_type == "rx": 
+            gate_sequence.append(qc.Gate.RX(int(a1), float(a2), 5))
+        elif gate_type == "ry":
+            gate_sequence.append(qc.Gate.RY(int(a1), float(a2), 5))
+        elif gate_type == "rz":
+            gate_sequence.append(qc.Gate.RZ(int(a1), float(a2), 5))
+        elif gate_type == "cx" or gate_type == "xc":
+            gate_sequence.append(qc.Gate.CX(int(a1), int(a2), 5))
+        else: raise
+
+#[gate_sequence] is the same as 
+# gate_sequence = isa_prepare(state, target_fidelity=0.95)
+# from py_demo.py
+# Getting the gate sequence using the C++ executable is a bit more convoluted
+# but the C++ code is much much faster than the Python version.
 
 
 
