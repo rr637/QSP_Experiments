@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 {
     if (argc < 4)
     {
-        std::cout << "Usage: ./isa_cpp [file_output] [file_input] [n_qubits] [fidelity] [num_layers]" << std::endl;
+        std::cout << "Usage: ./vqc_cpp [file_output] [file_input] [n_qubits] [fidelity] [num_layers]" << std::endl;
         return 0;
     }
     int n_qubits = std::stoi(argv[3]);
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     }
     for (int l = 0; l < num_layers; l++)
     {
-        for (int i = l & 1; i < n_qubits - 1; i++)
+        for (int i = l & 1; i < n_qubits - 1; i += 2)
         {
             gates.push_back(Gate::CX(i, i + 1));
             gates.push_back(Gate::RY(i, 0));

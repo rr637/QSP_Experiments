@@ -185,6 +185,13 @@ noisy_fids_per_cx =  {str(i): [] for i in range(0, 51)}
 noisy_vs_target_points = []
 n_qubits = 5
 n_states = 100
+def add_wo_dup(list,e,threshold):
+    for item in list:
+        if abs(item - e) <= threshold:
+            return False  # Duplicate found within threshold, don't add
+    list.append(e)  # No duplicates found, add the new element
+    return True
+threshold = 1e-4
 for i in range(n_states):
     state = rand_complex_state(n_qubits)
 
@@ -200,9 +207,9 @@ for i in range(n_states):
 
     target_fids, noisy_fids, noisy_vs_target = run_exp(state)
     for cx,fid in target_fids.items():
-        target_fids_per_cx[cx].append(fid)
+        add_wo_dup(target_fids_per_cx[cx],fid,threshold)
     for cx,fid in noisy_fids.items():
-        noisy_fids_per_cx[cx].append(fid)
+        add_wo_dup(noisy_fids_per_cx[cx],fid,threshold)
     for target,noisy in noisy_vs_target.items():
         noisy_vs_target_points.append((float(target),noisy))
 
@@ -239,27 +246,29 @@ x_points,y_points = zip(*noisy_vs_target_points)
 
 # Create a 1x2 grid
 fig, axs = plt.subplots(2, 2, figsize=(12, 6))
-y_ticks = np.arange(0.4, 1.1, 0.1)
+y_ticks = np.arange(0, 1.1, 0.2)
 
 # Plot for noisy_avg_err with error bars
 axs[0,0].bar(x_values_noisy, y_values_noisy, yerr=std_noisy, color='orange', alpha=0.7)
 axs[0,0].set_xlabel('CX Count',fontsize = 13)
 axs[0,0].set_ylabel('ISA - Noisy Fidelity ',fontsize = 13)
 axs[0,0].set_yticks(y_ticks)
-axs[0,0].set_ylim(0.3, 1.0)
+axs[0,0].set_ylim(0, 1.05)
 
 # Plot for target_avg_err with error bars
 axs[0,1].bar(x_values_target, y_values_target, yerr=std_target, color='blue', alpha=0.7)
 axs[0,1].set_xlabel('CX Count',fontsize = 13)
 axs[0,1].set_ylabel('ISA - Theoretical Fidelity',fontsize = 13)
 axs[0,1].set_yticks(y_ticks)
-axs[0,1].set_ylim(0.3, 1.0)
+axs[0,1].set_ylim(0, 1.05)
+
 
 axs[1, 0].scatter(x_points, y_points, color='red', s=5)  # Adjust the value of 's' as needed for smaller points
 axs[1,0].set_xlabel('ISA - Theoretical Fidelty',fontsize = 13)
 axs[1,0].set_ylabel('ISA - Noisy Fidelity',fontsize = 13)
-axs[1,0].set_ylim(0.3, 1.0)
-axs[1,0].set_xlim(0.3,1.0)
+axs[1,0].set_ylim(0.3, 0.71)
+axs[1,0].set_xlim(0.3,1.05)
+axs[1,0].set_yticks(np.arange(0.3,0.71,0.1))
 
 plt.tight_layout()
 
@@ -420,7 +429,7 @@ axs[1, 1].legend()
 # Adjust layout for better appearance
 plt.tight_layout()
 current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
-plt.savefig(f'Plots/2x2_100_states_x_label{current_time}.png')
+plt.savefig(f'Plots/Final_wo_dup{current_time}.png')
 plt.show()
 
 
