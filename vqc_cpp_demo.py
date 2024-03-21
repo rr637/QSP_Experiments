@@ -9,7 +9,7 @@ import csv
 #Compile cpp code to executable, if it hasn't been compiled already.
 # Or, if there's an issue with running the executable, try removing it and
 # recompiling
-num_layers = 114
+num_layers = 71
 fidelity = 0
 params = {'protein': 'homo_sapien', 'num_protein': 20, 'num_qubits':10, 'Avg_CX': 0, 'Avg_Runtime(s)': 0}
 n = 10
